@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow authenticated users to read and write their own user document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Allow authenticated users to query the `users` collection
+    match /users/{document=**} {
+      allow read: if request.auth != null;
+      allow read, write: if false; // Debug rule to log denied requests
+    }
+
+    // Allow authenticated users to read and write their own bookmarks
+    match /bookmarks/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Allow access to the user's subcollection
+    match /bookmarks/{userId}/userBookmarks/{bookmarkId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Allow authenticated users to read and write their own reading history
+    match /readingHistory/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Allow access to the user's reading history subcollection
+    match /readingHistory/{userId}/userHistory/{historyId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Allow authenticated users to count their saved articles and reading history
+    match /bookmarks/{userId}/userBookmarks {
+      allow list: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /readingHistory/{userId}/userHistory {
+      allow list: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
